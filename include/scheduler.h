@@ -7,11 +7,16 @@ typedef struct {
     int burst;
     int deadline;
     int priority;
+
     int remaining;
+    int start;
+    int finish;
     int waiting;
     int turnaround;
+
 } Process;
 
-void runScheduler(Process p[], int n);
-
+void takeProcessInput(Process p[], int *n);
+void sortByArrival(Process p[], int n);
+void displayProcesses(Process p[], int n);
 #endif
