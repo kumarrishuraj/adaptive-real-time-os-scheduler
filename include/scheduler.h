@@ -19,4 +19,7 @@ typedef struct {
 void takeProcessInput(Process p[], int *n);
 void sortByArrival(Process p[], int n);
 void displayProcesses(Process p[], int n);
+int selectProcess(Process p[], int n, int currentTime);
+void runScheduler(Process p[], int n);
+
 #endif

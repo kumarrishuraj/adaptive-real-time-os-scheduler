@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include "scheduler.h"
+
+//
+// ------------------------------
 // 1️⃣ TAKE PROCESS INPUT
 // ------------------------------
 void takeProcessInput(Process p[], int *n) {
@@ -27,6 +30,7 @@ void takeProcessInput(Process p[], int *n) {
     }
 }
 
+//
 // ------------------------------
 // 2️⃣ SORT BY ARRIVAL TIME
 // ------------------------------
@@ -42,6 +46,7 @@ void sortByArrival(Process p[], int n) {
     }
 }
 
+//
 // ------------------------------
 // 3️⃣ DISPLAY PROCESS TABLE
 // ------------------------------
@@ -60,6 +65,67 @@ void displayProcesses(Process p[], int n) {
 
     printf("--------------------------------------\n");
 }
+
+//
+// ------------------------------
+// 4️⃣ SELECT BEST PROCESS (Adaptive Priority)
+// ------------------------------
+int selectProcess(Process p[], int n, int currentTime) {
+    int selected = -1;
+    int bestPriority = -999999;
+
+    for (int i = 0; i < n; i++) {
+        if (p[i].arrival <= currentTime && p[i].remaining > 0) {
+
+            // Adaptive priority: priority boosts as deadline approaches
+            int effectivePriority = p[i].priority - (p[i].deadline - currentTime);
+
+            if (effectivePriority > bestPriority) {
+                bestPriority = effectivePriority;
+                selected = i;
+            }
+        }
+    }
+
+    return selected;
+}
+
+//
+// ------------------------------
+// 5️⃣ RUN SCHEDULER — Day 4 Gantt Chart
+// ------------------------------
 void runScheduler(Process p[], int n) {
-    printf("Scheduler logic will be implemented in upcoming days.\n");
+    int completed = 0;
+    int currentTime = 0;
+
+    printf("\nGantt Chart:\n");
+
+    while (completed < n) {
+        int idx = selectProcess(p, n, currentTime);
+
+        if (idx == -1) {
+            // CPU idle (no ready process)
+            printf(" | IDLE ");
+            currentTime++;
+            continue;
+        }
+
+        // First time this process runs → record start time
+        if (p[idx].start == -1)
+            p[idx].start = currentTime;
+
+        printf(" | %s ", p[idx].pid);
+
+        // Execute for one time-unit
+        p[idx].remaining--;
+        currentTime++;
+
+        // If process has finished execution
+        if (p[idx].remaining == 0) {
+            p[idx].finish = currentTime;
+            completed++;
+        }
+    }
+
+    printf(" |\n");
 }
