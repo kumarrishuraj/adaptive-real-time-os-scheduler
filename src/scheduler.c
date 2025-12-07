@@ -92,11 +92,12 @@ int selectProcess(Process p[], int n, int currentTime) {
 
 //
 // ------------------------------
-// 5️⃣ RUN SCHEDULER — Day 4 Gantt Chart
+// 5️⃣ RUN SCHEDULER (Day 5 version)
 // ------------------------------
-void runScheduler(Process p[], int n) {
+void runScheduler(Process p[], int n, int *totalTime, int *busyTime) {
     int completed = 0;
     int currentTime = 0;
+    *busyTime = 0;
 
     printf("\nGantt Chart:\n");
 
@@ -104,23 +105,20 @@ void runScheduler(Process p[], int n) {
         int idx = selectProcess(p, n, currentTime);
 
         if (idx == -1) {
-            // CPU idle (no ready process)
             printf(" | IDLE ");
             currentTime++;
             continue;
         }
 
-        // First time this process runs → record start time
         if (p[idx].start == -1)
             p[idx].start = currentTime;
 
         printf(" | %s ", p[idx].pid);
 
-        // Execute for one time-unit
         p[idx].remaining--;
         currentTime++;
+        (*busyTime)++; // CPU actually worked
 
-        // If process has finished execution
         if (p[idx].remaining == 0) {
             p[idx].finish = currentTime;
             completed++;
@@ -128,4 +126,55 @@ void runScheduler(Process p[], int n) {
     }
 
     printf(" |\n");
+
+    *totalTime = currentTime;
+}
+
+//
+// ------------------------------
+// 6️⃣ CALCULATE METRICS (WT, TAT, RT)
+// ------------------------------
+void calculateMetrics(Process p[], int n, int totalTime, int busyTime) {
+    for (int i = 0; i < n; i++) {
+        p[i].turnaround = p[i].finish - p[i].arrival;  // TAT
+        p[i].waiting = p[i].turnaround - p[i].burst;   // WT
+    }
+}
+
+//
+// ------------------------------
+// 7️⃣ PRINT FINAL RESULTS TABLE
+// ------------------------------
+void printResults(Process p[], int n, int totalTime, int busyTime) {
+    float sumWT = 0, sumTAT = 0, sumRT = 0;
+
+    printf("\nFinal Results:\n");
+    printf("PID\tAT\tBT\tCT\tRT\tWT\tTAT\tDeadlineMiss\n");
+
+    for (int i = 0; i < n; i++) {
+
+        int RT = p[i].start - p[i].arrival;
+        int deadlineMiss = (p[i].finish > p[i].deadline);
+
+        printf("%s\t%d\t%d\t%d\t%d\t%d\t%d\t%s\n",
+               p[i].pid,
+               p[i].arrival,
+               p[i].burst,
+               p[i].finish,     // CT
+               RT,              // RT
+               p[i].waiting,    // WT
+               p[i].turnaround, // TAT
+               deadlineMiss ? "YES" : "NO");
+
+        sumWT += p[i].waiting;
+        sumTAT += p[i].turnaround;
+        sumRT += RT;
+    }
+
+    printf("\nAverage Waiting Time     : %.2f", sumWT / n);
+    printf("\nAverage Turnaround Time  : %.2f", sumTAT / n);
+    printf("\nAverage Response Time    : %.2f", sumRT / n);
+
+    float cpuUtil = (busyTime / (float)totalTime) * 100.0f;
+    printf("\nCPU Utilization          : %.2f%%\n", cpuUtil);
 }

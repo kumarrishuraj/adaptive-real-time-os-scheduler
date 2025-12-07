@@ -20,6 +20,9 @@ void takeProcessInput(Process p[], int *n);
 void sortByArrival(Process p[], int n);
 void displayProcesses(Process p[], int n);
 int selectProcess(Process p[], int n, int currentTime);
-void runScheduler(Process p[], int n);
+void runScheduler(Process p[], int n, int *totalTime, int *busyTime);
+
+void calculateMetrics(Process p[], int n, int totalTime, int busyTime);
+void printResults(Process p[], int n, int totalTime, int busyTime);
 
 #endif
