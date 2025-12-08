@@ -1,0 +1,12 @@
+Adaptive Real-Time Scheduler Report
+------------------------------------
+
+Final Results:
+PID	AT	BT	CT	RT	WT	TAT	DeadlineMiss
+P2	0	10	10	0	0	10	YES
+P1	1	5	15	9	9	14	YES
+
+Average Waiting Time     : 4.50
+Average Turnaround Time  : 12.00
+Average Response Time    : 4.50
+CPU Utilization          : 100.00%

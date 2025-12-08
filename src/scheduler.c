@@ -56,11 +56,8 @@ void displayProcesses(Process p[], int n) {
 
     for (int i = 0; i < n; i++) {
         printf("%s\t%d\t%d\t%d\t%d\n",
-               p[i].pid,
-               p[i].arrival,
-               p[i].burst,
-               p[i].deadline,
-               p[i].priority);
+               p[i].pid, p[i].arrival, p[i].burst,
+               p[i].deadline, p[i].priority);
     }
 
     printf("--------------------------------------\n");
@@ -77,7 +74,6 @@ int selectProcess(Process p[], int n, int currentTime) {
     for (int i = 0; i < n; i++) {
         if (p[i].arrival <= currentTime && p[i].remaining > 0) {
 
-            // Adaptive priority: priority boosts as deadline approaches
             int effectivePriority = p[i].priority - (p[i].deadline - currentTime);
 
             if (effectivePriority > bestPriority) {
@@ -117,7 +113,7 @@ void runScheduler(Process p[], int n, int *totalTime, int *busyTime) {
 
         p[idx].remaining--;
         currentTime++;
-        (*busyTime)++; // CPU actually worked
+        (*busyTime)++;
 
         if (p[idx].remaining == 0) {
             p[idx].finish = currentTime;
@@ -136,8 +132,8 @@ void runScheduler(Process p[], int n, int *totalTime, int *busyTime) {
 // ------------------------------
 void calculateMetrics(Process p[], int n, int totalTime, int busyTime) {
     for (int i = 0; i < n; i++) {
-        p[i].turnaround = p[i].finish - p[i].arrival;  // TAT
-        p[i].waiting = p[i].turnaround - p[i].burst;   // WT
+        p[i].turnaround = p[i].finish - p[i].arrival;
+        p[i].waiting = p[i].turnaround - p[i].burst;
     }
 }
 
@@ -157,13 +153,9 @@ void printResults(Process p[], int n, int totalTime, int busyTime) {
         int deadlineMiss = (p[i].finish > p[i].deadline);
 
         printf("%s\t%d\t%d\t%d\t%d\t%d\t%d\t%s\n",
-               p[i].pid,
-               p[i].arrival,
-               p[i].burst,
-               p[i].finish,     // CT
-               RT,              // RT
-               p[i].waiting,    // WT
-               p[i].turnaround, // TAT
+               p[i].pid, p[i].arrival, p[i].burst,
+               p[i].finish, RT, p[i].waiting,
+               p[i].turnaround,
                deadlineMiss ? "YES" : "NO");
 
         sumWT += p[i].waiting;
@@ -177,4 +169,45 @@ void printResults(Process p[], int n, int totalTime, int busyTime) {
 
     float cpuUtil = (busyTime / (float)totalTime) * 100.0f;
     printf("\nCPU Utilization          : %.2f%%\n", cpuUtil);
+}
+
+//
+// ------------------------------
+// 8️⃣ SAVE REPORT TO TXT FILE (DAY 6 NEW FEATURE)
+// ------------------------------
+void saveReport(Process p[], int n, int totalTime, int busyTime) {
+    FILE *f = fopen("report.txt", "w");
+
+    fprintf(f, "Adaptive Real-Time Scheduler Report\n");
+    fprintf(f, "------------------------------------\n\n");
+
+    fprintf(f, "Final Results:\n");
+    fprintf(f, "PID\tAT\tBT\tCT\tRT\tWT\tTAT\tDeadlineMiss\n");
+
+    float sumWT = 0, sumTAT = 0, sumRT = 0;
+
+    for (int i = 0; i < n; i++) {
+
+        int RT = p[i].start - p[i].arrival;
+        int deadlineMiss = (p[i].finish > p[i].deadline);
+
+        fprintf(f, "%s\t%d\t%d\t%d\t%d\t%d\t%d\t%s\n",
+                p[i].pid, p[i].arrival, p[i].burst,
+                p[i].finish, RT, p[i].waiting,
+                p[i].turnaround,
+                deadlineMiss ? "YES" : "NO");
+
+        sumWT += p[i].waiting;
+        sumTAT += p[i].turnaround;
+        sumRT += RT;
+    }
+
+    fprintf(f, "\nAverage Waiting Time     : %.2f", sumWT / n);
+    fprintf(f, "\nAverage Turnaround Time  : %.2f", sumTAT / n);
+    fprintf(f, "\nAverage Response Time    : %.2f", sumRT / n);
+
+    float cpuUtil = (busyTime / (float)totalTime) * 100.0f;
+    fprintf(f, "\nCPU Utilization          : %.2f%%\n", cpuUtil);
+
+    fclose(f);
 }
