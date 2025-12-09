@@ -3,7 +3,7 @@
 
 //
 // ------------------------------
-// 1️⃣ TAKE PROCESS INPUT
+// 1️⃣ TAKE PROCESS INPUT (Now with Validation - DAY 7)
 // ------------------------------
 void takeProcessInput(Process p[], int *n) {
     printf("Enter number of processes: ");
@@ -11,17 +11,43 @@ void takeProcessInput(Process p[], int *n) {
 
     for (int i = 0; i < *n; i++) {
         printf("\n--- Enter details for Process %d ---\n", i + 1);
+
         printf("PID: ");
         scanf("%s", p[i].pid);
-        printf("Arrival Time: ");
-        scanf("%d", &p[i].arrival);
-        printf("Burst Time: ");
-        scanf("%d", &p[i].burst);
-        printf("Deadline: ");
-        scanf("%d", &p[i].deadline);
-        printf("Priority: ");
-        scanf("%d", &p[i].priority);
 
+        // Arrival Time
+        do {
+            printf("Arrival Time (>= 0): ");
+            scanf("%d", &p[i].arrival);
+            if (p[i].arrival < 0)
+                printf("Invalid input! Arrival Time cannot be negative.\n");
+        } while (p[i].arrival < 0);
+
+        // Burst Time
+        do {
+            printf("Burst Time (> 0): ");
+            scanf("%d", &p[i].burst);
+            if (p[i].burst <= 0)
+                printf("Invalid input! Burst Time must be positive.\n");
+        } while (p[i].burst <= 0);
+
+        // Deadline
+        do {
+            printf("Deadline (>= Arrival Time): ");
+            scanf("%d", &p[i].deadline);
+            if (p[i].deadline < p[i].arrival)
+                printf("Invalid! Deadline must be >= arrival time.\n");
+        } while (p[i].deadline < p[i].arrival);
+
+        // Priority
+        do {
+            printf("Priority (>= 1): ");
+            scanf("%d", &p[i].priority);
+            if (p[i].priority < 1)
+                printf("Invalid input! Priority must be >= 1.\n");
+        } while (p[i].priority < 1);
+
+        // Initialize runtime fields
         p[i].remaining = p[i].burst;
         p[i].start = -1;
         p[i].finish = 0;
@@ -88,7 +114,7 @@ int selectProcess(Process p[], int n, int currentTime) {
 
 //
 // ------------------------------
-// 5️⃣ RUN SCHEDULER (Day 5 version)
+// 5️⃣ RUN SCHEDULER
 // ------------------------------
 void runScheduler(Process p[], int n, int *totalTime, int *busyTime) {
     int completed = 0;
@@ -100,7 +126,7 @@ void runScheduler(Process p[], int n, int *totalTime, int *busyTime) {
     while (completed < n) {
         int idx = selectProcess(p, n, currentTime);
 
-        if (idx == -1) {
+        if (idx == -1) {  
             printf(" | IDLE ");
             currentTime++;
             continue;
@@ -173,7 +199,7 @@ void printResults(Process p[], int n, int totalTime, int busyTime) {
 
 //
 // ------------------------------
-// 8️⃣ SAVE REPORT TO TXT FILE (DAY 6 NEW FEATURE)
+// 8️⃣ SAVE REPORT TO FILE (DAY 6)
 // ------------------------------
 void saveReport(Process p[], int n, int totalTime, int busyTime) {
     FILE *f = fopen("report.txt", "w");
